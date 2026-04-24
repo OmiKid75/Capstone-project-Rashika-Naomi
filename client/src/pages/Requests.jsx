@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import API from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
 function Requests() {
@@ -15,7 +15,7 @@ function Requests() {
 
   const fetchRequests = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/requests', {
+      const res = await API.get('/requests', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRequests(res.data);
@@ -28,7 +28,7 @@ function Requests() {
 
   const handleUpdate = async (id, status) => {
     try {
-      await axios.put(`http://localhost:5000/api/requests/${id}`,
+      await API.put(`/requests/${id}`,
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -114,7 +114,6 @@ function Requests() {
                   </button>
                 </div>
               )}
-
             </div>
           ))}
         </div>

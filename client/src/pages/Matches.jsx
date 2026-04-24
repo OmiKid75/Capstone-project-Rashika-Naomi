@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import API from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
 function Matches() {
@@ -16,7 +16,7 @@ function Matches() {
 
   const fetchMatches = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/matches', {
+      const res = await API.get('/matches', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMatches(res.data);
@@ -39,9 +39,7 @@ function Matches() {
       {matches.length === 0 ? (
         <div className="bg-white rounded shadow p-8 text-center">
           <p className="text-gray-400 text-lg">No matches found yet</p>
-          <p className="text-gray-400 text-sm mt-2">
-            Add more skills to your profile to find matches
-          </p>
+          <p className="text-gray-400 text-sm mt-2">Add more skills to your profile to find matches</p>
           <button
             onClick={() => navigate('/dashboard')}
             className="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"

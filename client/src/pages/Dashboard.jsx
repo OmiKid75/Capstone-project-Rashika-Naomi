@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import API from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
 function Dashboard() {
@@ -7,8 +7,8 @@ function Dashboard() {
   const [skillInput, setSkillInput] = useState({ offered: '', wanted: '' });
   const [error, setError] = useState('');
   const [sentRequests, setSentRequests] = useState([]);
-  const navigate = useNavigate();
   const [myReviews, setMyReviews] = useState([]);
+  const navigate = useNavigate();
 
   const token = localStorage.getItem('token');
 
@@ -17,43 +17,31 @@ function Dashboard() {
     fetchProfile();
     fetchSentRequests();
   }, []);
-  
-  const fetchMyReviews = async () => {
-  try {
-    const res = await axios.get(`http://localhost:5000/api/reviews/${user?._id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setMyReviews(res.data.reviews);
-  } catch (err) {
-    console.error('Failed to load reviews');
-  }
-};
 
   const fetchProfile = async () => {
-  try {
-    const res = await axios.get('http://localhost:5000/api/users/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const userData = {
-      ...res.data,
-      skillsOffered: Array.isArray(res.data.skillsOffered) ? res.data.skillsOffered : [],
-      skillsWanted: Array.isArray(res.data.skillsWanted) ? res.data.skillsWanted : [],
-    };
-    setUser(userData);
+    try {
+      const res = await API.get('/users/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const userData = {
+        ...res.data,
+        skillsOffered: Array.isArray(res.data.skillsOffered) ? res.data.skillsOffered : [],
+        skillsWanted: Array.isArray(res.data.skillsWanted) ? res.data.skillsWanted : [],
+      };
+      setUser(userData);
 
-    // Fetch reviews now that we have user ID
-    const reviewRes = await axios.get(`http://localhost:5000/api/reviews/${res.data._id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setMyReviews(reviewRes.data.reviews);
-  } catch (err) {
-    setError('Failed to load profile');
-  }
-};
+      const reviewRes = await API.get(`/reviews/${res.data._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMyReviews(reviewRes.data.reviews);
+    } catch (err) {
+      setError('Failed to load profile');
+    }
+  };
 
   const fetchSentRequests = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/requests/sent', {
+      const res = await API.get('/requests/sent', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSentRequests(res.data);
@@ -70,7 +58,7 @@ function Dashboard() {
     const updatedWanted = type === 'wanted' ? [...user.skillsWanted, skill] : user.skillsWanted;
 
     try {
-      const res = await axios.put('http://localhost:5000/api/users/me',
+      const res = await API.put('/users/me',
         { skillsOffered: updatedOffered, skillsWanted: updatedWanted },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -110,7 +98,6 @@ function Dashboard() {
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Skills Offered */}
         <div className="bg-white rounded shadow p-5">
           <h2 className="text-lg font-semibold text-blue-600 mb-3">Skills I Offer</h2>
           <div className="flex flex-wrap gap-2 mb-4">
@@ -141,7 +128,6 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Skills Wanted */}
         <div className="bg-white rounded shadow p-5">
           <h2 className="text-lg font-semibold text-green-600 mb-3">Skills I Want</h2>
           <div className="flex flex-wrap gap-2 mb-4">
@@ -211,32 +197,32 @@ function Dashboard() {
           </div>
         )}
       </div>
- 
-    {/* My Reviews */}
-<div className="mt-8">
-  <h2 className="text-xl font-bold text-gray-800 mb-4">Reviews I've Received</h2>
-  {myReviews.length === 0 ? (
-    <p className="text-gray-400">No reviews yet</p>
-  ) : (
-    <div className="grid grid-cols-1 gap-3">
-      {myReviews.map((review) => (
-        <div key={review._id} className="bg-white rounded shadow p-4">
-          <div className="flex justify-between items-center mb-2">
-            <p className="font-medium text-gray-800">{review.reviewer.name}</p>
-            <span className="text-yellow-400 text-lg">
-              {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
-            </span>
+
+      {/* My Reviews */}
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Reviews I've Received</h2>
+        {myReviews.length === 0 ? (
+          <p className="text-gray-400">No reviews yet</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-3">
+            {myReviews.map((review) => (
+              <div key={review._id} className="bg-white rounded shadow p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="font-medium text-gray-800">{review.reviewer.name}</p>
+                  <span className="text-yellow-400 text-lg">
+                    {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                  </span>
+                </div>
+                {review.comment && (
+                  <p className="text-gray-600 text-sm">"{review.comment}"</p>
+                )}
+              </div>
+            ))}
           </div>
-          {review.comment && (
-            <p className="text-gray-600 text-sm">"{review.comment}"</p>
-          )}
-        </div>
-      ))}
+        )}
+      </div>
+
     </div>
-  )}
-</div>
-    </div>
-    
   );
 }
 

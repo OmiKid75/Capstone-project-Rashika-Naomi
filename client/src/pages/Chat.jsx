@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import API from '../services/api';
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:5000');
+const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000');
 
 function Chat() {
   const { roomId } = useParams();
@@ -20,14 +20,12 @@ function Chat() {
 
     const init = async () => {
       try {
-        // Get current user
-        const userRes = await axios.get('http://localhost:5000/api/users/me', {
+        const userRes = await API.get('/users/me', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCurrentUser(userRes.data);
 
-        // Get request to find both user IDs
-        const reqRes = await axios.get(`http://localhost:5000/api/requests/room/${roomId}`, {
+        const reqRes = await API.get(`/requests/room/${roomId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -35,11 +33,9 @@ function Chat() {
         const sortedRoom = [from, to].sort().join('_');
         setActualRoomId(sortedRoom);
 
-        // Join socket room
         socket.emit('joinRoom', sortedRoom);
 
-        // Load messages
-        const msgRes = await axios.get(`http://localhost:5000/api/messages/${sortedRoom}`, {
+        const msgRes = await API.get(`/messages/${sortedRoom}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setMessages(msgRes.data);
@@ -66,7 +62,7 @@ function Chat() {
     if (!text.trim() || !currentUser || !actualRoomId) return;
 
     try {
-      const res = await axios.post('http://localhost:5000/api/messages',
+      const res = await API.post('/messages',
         { roomId: actualRoomId, text },
         { headers: { Authorization: `Bearer ${token}` } }
       );

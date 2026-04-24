@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import API from '../services/api';
 
 function Review() {
   const { requestId, revieweeId } = useParams();
@@ -15,7 +15,7 @@ function Review() {
   const handleSubmit = async () => {
     if (rating === 0) { setError('Please select a rating'); return; }
     try {
-      await axios.post('http://localhost:5000/api/reviews',
+      await API.post('/reviews',
         { reviewee: revieweeId, request: requestId, rating, comment },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -35,7 +35,6 @@ function Review() {
         {error && <p className="text-red-500 mb-4">{error}</p>}
         {success && <p className="text-green-500 mb-4">{success}</p>}
 
-        {/* Star Rating */}
         <div className="flex gap-2 mb-6">
           {[1, 2, 3, 4, 5].map((star) => (
             <button

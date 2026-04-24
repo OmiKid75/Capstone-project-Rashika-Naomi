@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import API from '../services/api';
 import { useParams, useNavigate } from 'react-router-dom';
 
 function RequestPage() {
@@ -12,7 +12,7 @@ function RequestPage() {
 
   const handleSubmit = async () => {
     try {
-      await axios.post('http://localhost:5000/api/requests',
+      await API.post('/requests',
         { to: id, message },
         { headers: { Authorization: `Bearer ${token}` } }
       );
